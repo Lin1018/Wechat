@@ -67,7 +67,7 @@ exports.reply = function* (next) {
 				mediaId: data.media_id
 			}
 		} else if (content === '7') {
-			var data = yield wechatApi.uploadMaterial('video', __dirname + '/public/videos/vdo.mp4');
+			var data = yield wechatApi.uploadMaterial('video', __dirname + '/public/videos/lq.mp4');
 
 			reply = {
 				type: 'video',
@@ -87,6 +87,83 @@ exports.reply = function* (next) {
 				musicUrl: 'http://sc1.111ttt.com/2016/1/06/25/199251943186.mp3',
 				thumbMediaId: data.media_id
 			}
+		} else if (content === '9') {
+			// 上传永久素材(未授权)
+			var data = yield wechatApi.uploadMaterial('video', __dirname + '/public/videos/lq.mp4', {type: 'video', description: '{"title": "一个好的微信公众号", "introduction": "简简单单"}'});
+
+			reply = {
+				type: 'video',
+				title: '小视频2',
+				description: '玩个球！',
+				mediaId: data.media_id
+			}
+		} else if (content === '10') {
+			// 上传image类型的永久素材(获取素材id,上传图文) ------(picData返回480001)
+			var picData = yield wechatApi.uploadMaterial('image', __dirname + '/public/images/2.jpg', {});
+
+			var media = {
+				atricles: [{
+					title: '111111',
+					thumb_media_id: picData.media_id,
+					author: 'Lin',
+					digest: '简单的摘要',
+					show_cover_pic: 1,
+					content: '没有内容',
+					content_source_url: 'https://github.com'
+				}]
+			}
+
+			// 上传图文 ------(data返回480001)
+			data = yield wechatApi.uploadMaterial('news', media, {});
+			// 通过media_id找到图文数据 ------(data返回40007)
+			data = yield wechatApi.fetchMaterial(data.media_id, 'news', {});
+
+			// 获取图文素材
+			var items = data.news_item;
+			var news = [];
+
+			// 遍历图文素材
+			items.forEach(function(item) {
+				news.push({
+					title: item.title,
+					description: item.digest,
+					picUrl: picData.url,
+					url: item.url
+				});
+			});
+
+			// 回复的内容
+			reply = news;
+		} else if (content === '11') {
+			// 获取素材总数
+			var counts = yield wechatApi.countMaterial();
+			console.log(JSON.stringify(counts));
+
+			// 获取素材列表
+			var results = yield [
+				wechatApi.batchMaterial({
+					type: 'image',
+					offset: 0,
+					count: 10
+				}),
+				wechatApi.batchMaterial({
+					type: 'image',
+					offset: 0,
+					count: 10
+				}),
+				wechatApi.batchMaterial({
+					type: 'image',
+					offset: 0,
+					count: 10
+				}),
+				wechatApi.batchMaterial({
+					type: 'image',
+					offset: 0,
+					count: 10
+				}),
+			]
+			
+			console.log(results);
 		}
 
 		this.body = reply;

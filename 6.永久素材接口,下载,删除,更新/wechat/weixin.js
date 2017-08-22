@@ -67,7 +67,7 @@ exports.reply = function* (next) {
 				mediaId: data.media_id
 			}
 		} else if (content === '7') {
-			var data = yield wechatApi.uploadMaterial('video', __dirname + '/public/videos/vdo.mp4');
+			var data = yield wechatApi.uploadMaterial('video', __dirname + '/public/videos/lq.mp4');
 
 			reply = {
 				type: 'video',
@@ -86,6 +86,18 @@ exports.reply = function* (next) {
 				description: 'jay',
 				musicUrl: 'http://sc1.111ttt.com/2016/1/06/25/199251943186.mp3',
 				thumbMediaId: data.media_id
+			}
+		} else if (content === '9') {
+			// 上传永久素材(未授权)
+			var data = yield wechatApi.uploadMaterial('video', __dirname + '/public/videos/lq.mp4', {type: 'video', description: '{"title": "一个好的微信公众号", "introduction": "简简单单"}'});
+			
+			console.log(data);
+
+			reply = {
+				type: 'video',
+				title: '小视频2',
+				description: '玩个球！',
+				mediaId: data.media_id
 			}
 		}
 
