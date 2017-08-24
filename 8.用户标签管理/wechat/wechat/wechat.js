@@ -34,6 +34,25 @@ var api = {
 		count: prefix + 'material/get_materialcount?',
 		// 获取素材列表
 		batch: prefix + 'material/batchget_material?'
+	},
+	// 用户标签接口
+	tag: {
+		// 创建标签
+		create: prefix + 'tags/create?',
+		// 获取公众号已创建的标签
+		get: prefix + 'tags/get?',
+		// 编辑标签
+		update: prefix + 'tags/update?',
+		// 删除标签
+		delete: prefix + 'tags/delete?',
+		// 获取标签下粉丝列表
+		fans: prefix + 'user/tag/get?',
+		// 批量为用户打标签
+		batchUpdate: prefix + 'tags/members/batchtagging?',
+		// 批量为用户取消标签
+		batchCancel: prefix + 'tags/members/batchuntagging?',
+		// 获取用户身上的标签
+		fetchTag: prefix + 'tags/getidlist?'
 	}
 }
 	
@@ -261,7 +280,7 @@ Wechat.prototype.fetchMaterial = function(mediaId, type, permanent) {
             if (_data) {
               resolve(_data)
             } else {
-              throw new Error('fetch material fails')
+              throw new Error('Fetch material fails')
             }
           })
           .catch(function(err) {
@@ -390,6 +409,103 @@ Wechat.prototype.batchMaterial = function(options) {
 
 				// POST请求
 				request({method: 'POST', url: url, body: options, json:true}).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('Batch material fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 创建标签
+Wechat.prototype.createTag = function(name) {
+	var that = this;
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+				var url = api.tag.create + 'access_token=' + data.access_token;
+
+				var form = {
+					tag: {
+						name: name
+					}
+				}
+
+				// POST请求
+				request({method: 'POST', url: url, body: form, json:true}).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('Batch material fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 获取公众号已经创建的标签
+Wechat.prototype.getCreatedTag = function() {
+	var that = this;
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+				var url = api.tag.get + 'access_token=' + data.access_token;
+
+				// GET请求,不需要传递数据
+				request({url: url, json:true}).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('Batch material fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 获取用户身上的标签
+Wechat.prototype.fetchTag = function(openid) {
+	var that = this;
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+				var url = api.tag.get + 'access_token=' + data.access_token;
+
+				var form = {
+					openid: openid
+				}
+
+				// GET请求,不需要传递数据
+				request({method: 'POST', url: url, body:form, json:true}).then(function(response) {
 					var _data = response.body;
 
 					if (_data) {

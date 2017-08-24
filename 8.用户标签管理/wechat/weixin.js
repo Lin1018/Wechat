@@ -163,9 +163,29 @@ exports.reply = function* (next) {
 				}),
 			]
 			
-			console.log(JSON.stringify(results));
+			console.log(JSON.stringify(counts));
 
 			reply = JSON.stringify(results);
+		} else if (content === '12') {
+			// 创建标签
+			var tag = yield wechatApi.createTag('wechat');
+
+			console.log('新标签 wechat');
+			console.log(tag);
+
+			// 查看标签列表
+			var tags = yield wechatApi.getCreatedTag();
+
+			console.log('标签列表：');
+			console.log(tag);
+
+			// 查看用户标签
+			var tag2 = yield wechatApi.fetchTag(message.FromUserName);
+
+			console.log('查看自己的标签');
+			console.log(tag2);
+
+			reply = 'Tag done!';
 		}
 
 		this.body = reply;

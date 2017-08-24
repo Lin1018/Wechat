@@ -76,7 +76,6 @@ exports.reply = function* (next) {
 				mediaId: data.media_id,
 			}
 
-			console.log(reply);
 		} else if (content === '8') {
 			var data = yield wechatApi.uploadMaterial('image', __dirname + '/public/images/2.jpg');
 
@@ -93,12 +92,12 @@ exports.reply = function* (next) {
 
 			reply = {
 				type: 'video',
-				title: '小视频2',
-				description: '玩个球！',
+				title: '小视频1',
+				description: '上传个小视频！',
 				mediaId: data.media_id
 			}
 		} else if (content === '10') {
-			// 上传image类型的永久素材(获取素材id,上传图文) ------(picData返回480001)
+			// 上传image类型的永久素材(获取素材id,上传图文)
 			var picData = yield wechatApi.uploadMaterial('image', __dirname + '/public/images/2.jpg', {});
 
 			var media = {
@@ -110,12 +109,20 @@ exports.reply = function* (next) {
 					show_cover_pic: 1,
 					content: '没有内容',
 					content_source_url: 'https://github.com'
+				},{
+					title: '222222',
+					thumb_media_id: picData.media_id,
+					author: 'Lin',
+					digest: '简单的摘要',
+					show_cover_pic: 1,
+					content: '没有内容',
+					content_source_url: 'https://github.com'
 				}]
 			}
 
-			// 上传图文 ------(data返回480001)
+			// 上传图文
 			data = yield wechatApi.uploadMaterial('news', media, {});
-			// 通过media_id找到图文数据 ------(data返回40007)
+			// 通过media_id找到图文数据			
 			data = yield wechatApi.fetchMaterial(data.media_id, 'news', {});
 
 			// 获取图文素材
@@ -129,7 +136,7 @@ exports.reply = function* (next) {
 					description: item.digest,
 					picUrl: picData.url,
 					url: item.url
-				});
+				})
 			});
 
 			// 回复的内容
@@ -166,10 +173,55 @@ exports.reply = function* (next) {
 			console.log(JSON.stringify(results));
 
 			reply = JSON.stringify(results);
-		}
+		} else if (content === '12') {
+			// 创建标签
+			var tag = yield wechatApi.createTag('好友');
+
+			console.log('wechat新标签');
+			console.log(tag);
+
+			// 查看标签列表
+			var tags = yield wechatApi.getCreatedTag();
+
+			console.log('标签列表：');
+			console.log(tag);
+
+			// 查看用户标签
+			var tag2 = yield wechatApi.fetchTag(message.FromUserName);
+
+			console.log('查看自己的标签');
+			console.log(tag2);
+
+			reply = 'Tag done!';
+		} else if (content === '13') {
+		// 获取用户信息
+		var user = yield wechatApi.fetchUser(message.FromUserName);
+
+		console.log(user);
+
+		var openIds = [
+			{
+				openid: message.FromUserName,
+				lang: 'en'
+			}
+		];
+
+		// 批量获取用户信息
+		var users = yield wechatApi.fetchUser(openIds);
+
+		console.log(users);
+
+		reply = JSON.stringify(user);
+	} else if (content === '14') {
+		// 获取用户列表
+		var userList = yield wechatApi.listUsers();
+
+		console.log(userList);
+
+		reply = userList.total;
+	}
 
 		this.body = reply;
 	}
-
 	yield next;
 }

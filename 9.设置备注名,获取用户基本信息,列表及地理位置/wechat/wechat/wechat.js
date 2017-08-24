@@ -34,6 +34,35 @@ var api = {
 		count: prefix + 'material/get_materialcount?',
 		// 获取素材列表
 		batch: prefix + 'material/batchget_material?'
+	},
+	// 用户标签接口
+	tag: {
+		// 创建标签
+		create: prefix + 'tags/create?',
+		// 获取公众号已创建的标签
+		get: prefix + 'tags/get?',
+		// 编辑标签
+		update: prefix + 'tags/update?',
+		// 删除标签
+		delete: prefix + 'tags/delete?',
+		// 获取标签下粉丝列表
+		fans: prefix + 'user/tag/get?',
+		// 批量为用户打标签
+		batchUpdate: prefix + 'tags/members/batchtagging?',
+		// 批量为用户取消标签
+		batchCancel: prefix + 'tags/members/batchuntagging?',
+		// 获取用户身上的标签
+		fetchTag: prefix + 'tags/getidlist?'
+	},
+	user: {
+		// 设置用户备注名
+		remark: prefix + 'user/info/updateremark?',
+		// 获取用户的基本信息
+		fetch: prefix + 'user/info?',
+		// 批量获取用户的信息
+		batchFetch: prefix + 'user/info/batchget?',
+		// 获取用户列表
+		list: prefix + 'user/get?'
 	}
 }
 	
@@ -261,7 +290,7 @@ Wechat.prototype.fetchMaterial = function(mediaId, type, permanent) {
             if (_data) {
               resolve(_data)
             } else {
-              throw new Error('fetch material fails')
+              throw new Error('Fetch material fails')
             }
           })
           .catch(function(err) {
@@ -366,7 +395,7 @@ Wechat.prototype.countMaterial = function() {
 					reject(err);
 				});
 
-			});
+			});	
 	});
 
 }
@@ -396,6 +425,217 @@ Wechat.prototype.batchMaterial = function(options) {
 						resolve(_data);
 					} else {
 						throw new Error('Batch material fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 创建标签
+Wechat.prototype.createTag = function(name) {
+	var that = this;
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+				var url = api.tag.create + 'access_token=' + data.access_token;
+
+				var form = {
+					tag: {
+						name: name
+					}
+				}
+
+				// POST请求
+				request({method: 'POST', url: url, body: form, json:true}).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('Create tag fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 获取公众号已经创建的标签
+Wechat.prototype.getCreatedTag = function() {
+	var that = this;
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+				var url = api.tag.get + 'access_token=' + data.access_token;
+
+				// GET请求,不需要传递数据
+				request({url: url, json:true}).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('Get created fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 获取用户身上的标签
+Wechat.prototype.fetchTag = function(openId) {
+	var that = this;
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+				var url = api.tag.get + 'access_token=' + data.access_token;
+
+				var form = {
+					openid: openId
+				}
+
+				// POST请求
+				request({method: 'POST', url: url, body:form, json:true}).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('Fetch tag fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 设置用户备注名
+Wechat.prototype.remarkUser = function(openId, remark) {
+	var that = this;
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+				var url = api.user.remark + 'access_token=' + data.access_token;
+
+				var form = {
+					openid: openId,
+					remark: remark
+				}
+
+				// POST请求
+				request({method: 'POST', url: url, body:form, json:true}).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('Remark user fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 单个获取和批量获取用户基本信息
+Wechat.prototype.fetchUser = function(openIds, lang) {
+	var that = this;
+
+	// lang默认初始值为简体
+  lang = lang || 'zh_CN';  
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+
+		    	var options = {
+		    		json: true
+		    	};
+
+		    	// 引用lodash中的方法,判断如果openId为数组,则为批量获取
+		    	if (_.isArray(openIds)) {
+		    		options.url = api.user.batchFetch + 'access_token=' + data.access_token;
+
+		    		options.body = {
+							user_list: openIds
+						};
+						options.method = 'POST';
+		    	} else {
+		    		// 单个获取
+		    		options.url = api.user.fetch + 'access_token=' + data.access_token + '&openid=' + openIds + '&lang=' + lang;
+		    	}
+
+				request(options).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('Fetch user fails');
+					}
+				})
+				.catch(function(err) {
+					reject(err);
+				});
+
+			});
+	});
+
+}
+
+// 获取用户的列表
+Wechat.prototype.listUsers = function(openId) {
+	var that = this;
+
+	return new Promise(function(resolve, reject) {
+		that
+		  .fetchAccessToken()  // 获取全局票据
+		    .then(function(data) {
+				var url = api.user.list + 'access_token=' + data.access_token;
+
+				if (openId) {
+					url += '&next_openid=' + openId; 
+				}
+
+				// GET请求
+				request({url: url, json:true}).then(function(response) {
+					var _data = response.body;
+
+					if (_data) {
+						resolve(_data);
+					} else {
+						throw new Error('List user fails');
 					}
 				})
 				.catch(function(err) {
